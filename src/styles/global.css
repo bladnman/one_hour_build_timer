@@ -1,0 +1,277 @@
+/**
+ * Global styles
+ */
+
+@import './theme.css';
+@import './animations.css';
+
+/* Base font size - dynamically updated by useScaling hook */
+:root {
+  font-size: 16px;
+}
+
+/* Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Transparent background for Tauri window */
+html, body {
+  background: transparent;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-ui);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100%;
+}
+
+/* App container with semi-transparent background */
+.app-container {
+  background: var(--color-background);
+  border-radius: var(--radius-container);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Title area */
+.title-area {
+  position: absolute;
+  top: var(--spacing-sm);
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+.title {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  cursor: pointer;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+  display: inline-block;
+}
+
+.title:hover {
+  background-color: var(--color-button-hover);
+}
+
+.title-input {
+  font-size: 0.7rem;
+  color: var(--color-text-primary);
+  background: var(--color-button-hover);
+  border: 1px solid var(--color-edit-cursor);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  text-align: center;
+  outline: none;
+  font-family: var(--font-ui);
+}
+
+/* Timer display */
+.timer-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  font-family: var(--font-timer);
+  font-size: 3.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  /* Promote to own layer to prevent rendering artifacts during resize */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Timer state colors */
+.timer-display[data-status="running"] .time-segment {
+  color: var(--color-running);
+}
+
+.timer-display[data-status="paused"] .time-segment,
+.timer-display[data-status="idle"] .time-segment {
+  color: var(--color-paused);
+}
+
+.timer-display[data-status="overtime"] .time-segment {
+  color: var(--color-overtime);
+}
+
+/* Negative sign */
+.negative-sign {
+  color: var(--color-overtime);
+  margin-right: 0.1em;
+}
+
+/* Time segment */
+.time-segment {
+  cursor: pointer;
+  padding: 0.05em 0;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+  position: relative;
+  display: inline-block;
+  text-align: center;
+}
+
+.time-segment:hover {
+  background-color: var(--color-button-hover);
+}
+
+.time-segment[data-editing="true"] {
+  background-color: var(--color-edit-highlight);
+  outline: 2px solid var(--color-edit-cursor);
+  outline-offset: 1px;
+}
+
+.time-segment-input {
+  font-family: var(--font-timer);
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}
+
+/* Hide spin buttons on number inputs */
+.time-segment-input::-webkit-outer-spin-button,
+.time-segment-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.time-segment-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Colon separator */
+.colon-separator {
+  color: var(--color-colon);
+  margin: 0 -0.1em;
+  display: inline-block;
+  animation: colon-throb var(--animation-colon-duration) ease-in-out infinite;
+}
+
+.timer-display[data-status="paused"] .colon-separator,
+.timer-display[data-status="idle"] .colon-separator {
+  animation-play-state: paused;
+  opacity: 0.5;
+}
+
+/* Control bar - hidden by default, shown on hover */
+.control-bar {
+  position: absolute;
+  bottom: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  opacity: 0;
+  transform: translateY(0.5rem);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+  pointer-events: none;
+}
+
+/* Show controls when hovering anywhere on the app */
+.app-container:hover .control-bar,
+.control-bar:focus-within {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Control button */
+.control-button {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.control-button:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-button-hover);
+}
+
+.control-button:active {
+  background-color: var(--color-button-active);
+}
+
+/* Play/pause button */
+.play-pause-button {
+  font-size: 1.2rem;
+}
+
+/* Preset buttons container */
+.preset-buttons {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.preset-button {
+  font-size: 0.6rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-button-hover);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-ui);
+}
+
+.preset-button:hover {
+  color: var(--color-text-primary);
+  background: var(--color-button-active);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Drag region - allows window to be dragged */
+.drag-region {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  -webkit-app-region: drag;
+}
+
+/* Interactive elements should not be draggable */
+.title,
+.title-input,
+.time-segment,
+.control-button,
+.preset-button {
+  -webkit-app-region: no-drag;
+}
