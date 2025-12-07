@@ -1,5 +1,5 @@
 import { useReducer, useEffect, useCallback, useMemo } from 'react';
-import type { TimerState, TimerAction, TimeSegmentKey, TimerStatus } from '../types';
+import type { TimerState, TimerAction, TimeSegmentKey, TimerStatus, TimerMode } from '../types';
 import { TIMING, TIMER_COLORS } from '../config';
 import {
   formatTimeForDisplay,
@@ -31,8 +31,14 @@ function timerReducer(state: TimerState, action: TimerAction): TimerState {
       };
 
     case 'TICK': {
-      const newSeconds = state.remainingSeconds - 1;
-      const newStatus: TimerStatus = newSeconds < 0 ? 'overtime' : 'running';
+      const mode = action.payload;
+      const newSeconds = mode === 'countdown'
+        ? state.remainingSeconds - 1
+        : state.remainingSeconds + 1;
+      // In countdown mode, go to overtime when negative
+      // In count-up mode, just keep running
+      const newStatus: TimerStatus =
+        mode === 'countdown' && newSeconds < 0 ? 'overtime' : 'running';
       return {
         ...state,
         remainingSeconds: newSeconds,
@@ -128,7 +134,7 @@ export interface UseTimerReturn {
   displayColor: string;
 }
 
-export function useTimer(initialSeconds = 0): UseTimerReturn {
+export function useTimer(initialSeconds = 0, mode: TimerMode = 'countdown'): UseTimerReturn {
   const [state, dispatch] = useReducer(timerReducer, {
     ...initialState,
     remainingSeconds: initialSeconds,
@@ -142,11 +148,11 @@ export function useTimer(initialSeconds = 0): UseTimerReturn {
     }
 
     const interval = setInterval(() => {
-      dispatch({ type: 'TICK' });
+      dispatch({ type: 'TICK', payload: mode });
     }, TIMING.TICK_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [state.status]);
+  }, [state.status, mode]);
 
   const start = useCallback(() => dispatch({ type: 'START' }), []);
   const pause = useCallback(() => dispatch({ type: 'PAUSE' }), []);

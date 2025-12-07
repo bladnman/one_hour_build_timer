@@ -4,6 +4,11 @@
 export type TimerStatus = 'idle' | 'running' | 'paused' | 'overtime';
 
 /**
+ * Timer mode - countdown or count-up
+ */
+export type TimerMode = 'countdown' | 'countup';
+
+/**
  * Time segment keys for editing
  */
 export type TimeSegmentKey = 'hours' | 'minutes' | 'seconds';
@@ -39,7 +44,7 @@ export interface TimerState {
 export type TimerAction =
   | { type: 'START' }
   | { type: 'PAUSE' }
-  | { type: 'TICK' }
+  | { type: 'TICK'; payload: TimerMode }
   | { type: 'RESET' }
   | { type: 'SET_TIME'; payload: number }
   | { type: 'ADJUST_TIME'; payload: number }

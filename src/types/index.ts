@@ -3,6 +3,7 @@
  */
 export type {
   TimerStatus,
+  TimerMode,
   TimeSegmentKey,
   TimeSegments,
   TimerState,

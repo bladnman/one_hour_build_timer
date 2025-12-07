@@ -10,4 +10,7 @@ export const STORAGE_KEYS = {
 
   /** User-defined title */
   TITLE: 'countdown-timer:title',
+
+  /** Timer mode (countdown or countup) */
+  TIMER_MODE: 'countdown-timer:mode',
 } as const;
