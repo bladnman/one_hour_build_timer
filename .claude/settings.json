@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay -v 0.2 \"sounds/clock_tick_1.mp3\""
+          }
+        ]
+      }
+    ]
+  }
+}
