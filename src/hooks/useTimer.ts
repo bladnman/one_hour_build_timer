@@ -1,6 +1,6 @@
-import { useReducer, useEffect, useCallback, useMemo } from 'react';
+import { useReducer, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { TimerState, TimerAction, TimeSegmentKey, TimerStatus, TimerMode } from '../types';
-import { TIMING, TIMER_COLORS, DEFAULT_THEME_ID, getThemeById } from '../config';
+import { TIMING, TIMER_COLORS, DEFAULT_THEME_ID, getThemeById, STORAGE_KEYS, getWindowStorageKey } from '../config';
 import {
   formatTimeForDisplay,
   updateSegmentValue,
@@ -18,6 +18,51 @@ const initialState: TimerState = {
   editingSegment: null,
   wasRunningBeforeEdit: false,
 };
+
+/**
+ * Load saved timer state from localStorage
+ */
+function loadSavedTimerState(windowId: string, defaultSeconds: number): Partial<TimerState> {
+  try {
+    const secondsKey = getWindowStorageKey(STORAGE_KEYS.TIMER_SECONDS, windowId);
+    const initialKey = getWindowStorageKey(STORAGE_KEYS.TIMER_INITIAL, windowId);
+    const statusKey = getWindowStorageKey(STORAGE_KEYS.TIMER_STATUS, windowId);
+
+    const savedSeconds = localStorage.getItem(secondsKey);
+    const savedInitial = localStorage.getItem(initialKey);
+    const savedStatus = localStorage.getItem(statusKey);
+
+    return {
+      remainingSeconds: savedSeconds !== null ? JSON.parse(savedSeconds) : defaultSeconds,
+      initialSeconds: savedInitial !== null ? JSON.parse(savedInitial) : defaultSeconds,
+      // Restore as paused if was running (don't auto-start)
+      status: savedStatus !== null ? (JSON.parse(savedStatus) === 'running' || JSON.parse(savedStatus) === 'overtime' ? 'paused' : JSON.parse(savedStatus)) : 'idle',
+    };
+  } catch {
+    return {
+      remainingSeconds: defaultSeconds,
+      initialSeconds: defaultSeconds,
+      status: 'idle',
+    };
+  }
+}
+
+/**
+ * Save timer state to localStorage
+ */
+function saveTimerState(windowId: string, state: TimerState): void {
+  try {
+    const secondsKey = getWindowStorageKey(STORAGE_KEYS.TIMER_SECONDS, windowId);
+    const initialKey = getWindowStorageKey(STORAGE_KEYS.TIMER_INITIAL, windowId);
+    const statusKey = getWindowStorageKey(STORAGE_KEYS.TIMER_STATUS, windowId);
+
+    localStorage.setItem(secondsKey, JSON.stringify(state.remainingSeconds));
+    localStorage.setItem(initialKey, JSON.stringify(state.initialSeconds));
+    localStorage.setItem(statusKey, JSON.stringify(state.status));
+  } catch {
+    // Ignore storage errors
+  }
+}
 
 function timerReducer(state: TimerState, action: TimerAction): TimerState {
   switch (action.type) {
@@ -137,12 +182,21 @@ export interface UseTimerReturn {
   displayColor: string;
 }
 
-export function useTimer(initialSeconds = 0, mode: TimerMode = 'countdown'): UseTimerReturn {
+export function useTimer(initialSeconds = 0, mode: TimerMode = 'countdown', windowId = 'main'): UseTimerReturn {
+  // Load saved state on first render
+  const savedState = useRef(loadSavedTimerState(windowId, initialSeconds));
+
   const [state, dispatch] = useReducer(timerReducer, {
     ...initialState,
-    remainingSeconds: initialSeconds,
-    initialSeconds,
+    remainingSeconds: savedState.current.remainingSeconds ?? initialSeconds,
+    initialSeconds: savedState.current.initialSeconds ?? initialSeconds,
+    status: savedState.current.status ?? 'idle',
   });
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    saveTimerState(windowId, state);
+  }, [windowId, state.remainingSeconds, state.initialSeconds, state.status]);
 
   // Timer tick effect
   useEffect(() => {

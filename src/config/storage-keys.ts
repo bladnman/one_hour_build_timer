@@ -6,8 +6,14 @@ export const STORAGE_KEYS = {
   /** Recent user-defined time presets (per window) */
   USER_PRESETS: 'countdown-timer:user-presets',
 
-  /** Last set time (per window) */
-  LAST_TIME: 'countdown-timer:last-time',
+  /** Current timer seconds (per window) */
+  TIMER_SECONDS: 'countdown-timer:seconds',
+
+  /** Initial timer seconds for reset (per window) */
+  TIMER_INITIAL: 'countdown-timer:initial',
+
+  /** Timer status - running, paused, idle, overtime (per window) */
+  TIMER_STATUS: 'countdown-timer:status',
 
   /** User-defined title (per window) */
   TITLE: 'countdown-timer:title',

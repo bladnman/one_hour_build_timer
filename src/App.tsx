@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   useTimer,
   useKeyboardShortcuts,
@@ -15,12 +15,12 @@ import {
   ResetButton,
   PresetButtons,
   ModeToggleButton,
-  NewWindowButton,
+  MenuButton,
 } from './components/Controls';
 import { EditableTitle } from './components/Title';
-import { ContextMenu } from './components/ContextMenu';
+import { MenuOverlay } from './components/Menu';
 import { APP_CONFIG, STORAGE_KEYS, getWindowStorageKey } from './config';
-import { createWindow } from './utils/tauri-commands';
+import { createWindow, closeWindow } from './utils/tauri-commands';
 import type { TimerMode } from './types';
 
 function App() {
@@ -29,12 +29,16 @@ function App() {
 
   // Get window ID for scoped storage
   const windowId = getWindowId();
+  const isMainWindow = windowId === 'main';
+
+  // Menu state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Dynamic scaling based on window size
   useScaling(containerRef);
 
   // Color theme management
-  const { themeId, setThemeId } = useColorTheme();
+  const { themes, themeId, setThemeId } = useColorTheme();
 
   // Window registry for multi-window persistence
   useWindowRegistry();
@@ -50,8 +54,8 @@ function App() {
     setMode((prev) => (prev === 'countdown' ? 'countup' : 'countdown'));
   }, [setMode]);
 
-  // Timer state and controls
-  const timer = useTimer(60, mode); // Start with 1 minute default
+  // Timer state and controls (with persistence)
+  const timer = useTimer(60, mode, windowId);
 
   // User presets management (scoped to window)
   const { allPresets, addPreset } = useUserPresets(windowId);
@@ -75,10 +79,19 @@ function App() {
   const handleNewWindow = useCallback(async () => {
     try {
       await createWindow();
-    } catch (error) {
-      console.error('Failed to create new window:', error);
+    } catch {
+      // Silently ignore window creation errors
     }
   }, []);
+
+  // Handle closing current window
+  const handleCloseWindow = useCallback(async () => {
+    try {
+      await closeWindow(windowId);
+    } catch (error) {
+      console.error('Failed to close window:', error);
+    }
+  }, [windowId]);
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -90,11 +103,16 @@ function App() {
 
   return (
     <div ref={containerRef} className="app-container" data-tauri-drag-region>
-      {/* Context menu for right-click */}
-      <ContextMenu
-        themeId={themeId}
-        onThemeChange={setThemeId}
+      {/* Menu overlay */}
+      <MenuOverlay
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        themes={themes}
+        currentThemeId={themeId}
+        onThemeSelect={setThemeId}
         onNewWindow={handleNewWindow}
+        showCloseWindow={!isMainWindow}
+        onCloseWindow={handleCloseWindow}
       />
 
       {/* Editable title */}
@@ -114,7 +132,8 @@ function App() {
 
       {/* Control bar */}
       <div className="control-bar">
-        <NewWindowButton onClick={handleNewWindow} />
+        <MenuButton onClick={() => setIsMenuOpen(true)} />
+        <div className="control-bar-separator" />
         <ModeToggleButton mode={mode} onToggle={toggleMode} />
         <PlayPauseButton status={timer.state.status} onToggle={timer.toggle} />
         <ResetButton onReset={timer.reset} />
