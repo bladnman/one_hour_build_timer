@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import type { PresetTime, UserPreset } from '../types';
-import { DEFAULT_PRESETS, USER_PRESET_CONFIG, STORAGE_KEYS } from '../config';
+import { DEFAULT_PRESETS, USER_PRESET_CONFIG, STORAGE_KEYS, getWindowStorageKey } from '../config';
 import { useLocalStorage } from './useLocalStorage';
 import { formatPresetLabel } from '../utils/time';
 
@@ -17,12 +17,14 @@ interface UseUserPresetsReturn {
 
 /**
  * Hook for managing time presets including user-defined ones
+ * @param windowId - Optional window ID for scoped storage
  */
-export function useUserPresets(): UseUserPresetsReturn {
-  const [userPresets, setUserPresets] = useLocalStorage<UserPreset[]>(
-    STORAGE_KEYS.USER_PRESETS,
-    []
-  );
+export function useUserPresets(windowId?: string): UseUserPresetsReturn {
+  const storageKey = windowId
+    ? getWindowStorageKey(STORAGE_KEYS.USER_PRESETS, windowId)
+    : STORAGE_KEYS.USER_PRESETS;
+
+  const [userPresets, setUserPresets] = useLocalStorage<UserPreset[]>(storageKey, []);
 
   const addPreset = useCallback(
     (seconds: number) => {

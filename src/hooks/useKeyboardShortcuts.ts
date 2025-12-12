@@ -5,6 +5,8 @@ interface UseKeyboardShortcutsOptions {
   onToggle: () => void;
   /** Handler for escape press */
   onEscape?: () => void;
+  /** Handler for Cmd/Ctrl+N (new window) */
+  onNewWindow?: () => void;
   /** Whether shortcuts are currently enabled */
   enabled?: boolean;
   /** Whether an input is currently focused (disables shortcuts) */
@@ -17,11 +19,19 @@ interface UseKeyboardShortcutsOptions {
 export function useKeyboardShortcuts({
   onToggle,
   onEscape,
+  onNewWindow,
   enabled = true,
   isEditing = false,
 }: UseKeyboardShortcutsOptions): void {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
+      // Handle Cmd/Ctrl+N for new window (always enabled)
+      if ((event.metaKey || event.ctrlKey) && event.key === 'n') {
+        event.preventDefault();
+        onNewWindow?.();
+        return;
+      }
+
       // Don't capture when editing or when shortcuts are disabled
       if (!enabled || isEditing) {
         return;
@@ -49,7 +59,7 @@ export function useKeyboardShortcuts({
           break;
       }
     },
-    [enabled, isEditing, onToggle, onEscape]
+    [enabled, isEditing, onToggle, onEscape, onNewWindow]
   );
 
   useEffect(() => {

@@ -1,12 +1,15 @@
 import { useReducer, useEffect, useCallback, useMemo } from 'react';
 import type { TimerState, TimerAction, TimeSegmentKey, TimerStatus, TimerMode } from '../types';
-import { TIMING, TIMER_COLORS } from '../config';
+import { TIMING, TIMER_COLORS, DEFAULT_THEME_ID, getThemeById } from '../config';
 import {
   formatTimeForDisplay,
   updateSegmentValue,
   setSegmentValue,
   secondsToSegments,
 } from '../utils/time';
+
+// Default theme colors (used as fallback)
+const defaultTheme = getThemeById(DEFAULT_THEME_ID);
 
 const initialState: TimerState = {
   remainingSeconds: 0,
@@ -197,9 +200,9 @@ export function useTimer(initialSeconds = 0, mode: TimerMode = 'countdown'): Use
   const displayColor = useMemo(() => {
     switch (state.status) {
       case 'running':
-        return TIMER_COLORS.running;
+        return defaultTheme.running;
       case 'overtime':
-        return TIMER_COLORS.overtime;
+        return defaultTheme.overtime;
       case 'paused':
       case 'idle':
       default:

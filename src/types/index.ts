@@ -12,3 +12,5 @@ export type {
   UserPreset,
   DisplayTime,
 } from './timer';
+
+export type { WindowState, WindowRegistryEntry } from './window';

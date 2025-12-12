@@ -272,6 +272,14 @@ body {
 .title-input,
 .time-segment,
 .control-button,
-.preset-button {
+.preset-button,
+.context-menu {
   -webkit-app-region: no-drag;
+}
+
+/* New window button */
+.new-window-button {
+  font-size: 1rem;
+  font-weight: 300;
+  min-width: 1.5rem;
 }
