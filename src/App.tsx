@@ -1,10 +1,11 @@
 import { useCallback, useRef } from 'react';
-import { useTimer, useKeyboardShortcuts, useUserPresets, useLocalStorage, useScaling } from './hooks';
+import { useTimer, useKeyboardShortcuts, useUserPresets, useLocalStorage, useScaling, useColorPairing } from './hooks';
 import { TimerDisplay } from './components/Timer';
-import { PlayPauseButton, ResetButton, PresetButtons, ModeToggleButton } from './components/Controls';
+import { PlayPauseButton, ResetButton, PresetButtons, ModeToggleButton, ColorPairingButton, NewWindowButton } from './components/Controls';
 import { EditableTitle } from './components/Title';
 import { APP_CONFIG, STORAGE_KEYS } from './config';
 import type { TimerMode } from './types';
+import { openNewTimerWindow } from './utils/tauri';
 
 function App() {
   // Container ref for scaling
@@ -15,6 +16,9 @@ function App() {
 
   // Timer mode persistence
   const [mode, setMode] = useLocalStorage<TimerMode>(STORAGE_KEYS.TIMER_MODE, 'countdown');
+
+  // Color pairing selection
+  const { activePairing, cyclePairing } = useColorPairing();
 
   // Toggle between countdown and count-up modes
   const toggleMode = useCallback(() => {
@@ -29,6 +33,12 @@ function App() {
 
   // Title persistence
   const [title, setTitle] = useLocalStorage<string>(STORAGE_KEYS.TITLE, APP_CONFIG.name);
+
+  // Launch a new timer window
+  const handleNewWindow = useCallback(() => {
+    const sanitizedLabel = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    openNewTimerWindow(sanitizedLabel || undefined);
+  }, [title]);
 
   // Handle preset selection
   const handlePresetSelect = useCallback(
@@ -73,6 +83,8 @@ function App() {
         <PlayPauseButton status={timer.state.status} onToggle={timer.toggle} />
         <ResetButton onReset={timer.reset} />
         <PresetButtons presets={allPresets} onSelect={handlePresetSelect} />
+        <ColorPairingButton pairing={activePairing} onNext={cyclePairing} />
+        <NewWindowButton onCreate={handleNewWindow} />
       </div>
     </div>
   );

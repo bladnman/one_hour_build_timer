@@ -14,6 +14,38 @@ export const TIMER_COLORS = {
 } as const;
 
 /**
+ * Preset color pairings for the clock face
+ */
+export const COLOR_PAIRINGS = [
+  {
+    id: 'green-red',
+    label: 'Green / Red',
+    running: '#22c55e',
+    overtime: '#ef4444',
+  },
+  {
+    id: 'blue-amber',
+    label: 'Blue / Amber',
+    running: '#38bdf8',
+    overtime: '#f59e0b',
+  },
+  {
+    id: 'violet-pink',
+    label: 'Violet / Pink',
+    running: '#a855f7',
+    overtime: '#fb7185',
+  },
+  {
+    id: 'mint-orange',
+    label: 'Mint / Orange',
+    running: '#34d399',
+    overtime: '#fb923c',
+  },
+] as const;
+
+export const DEFAULT_COLOR_PAIRING_ID = COLOR_PAIRINGS[0].id;
+
+/**
  * UI background and container colors
  */
 export const UI_COLORS = {
@@ -32,3 +64,4 @@ export const UI_COLORS = {
 } as const;
 
 export type TimerColorKey = keyof typeof TIMER_COLORS;
+export type ColorPairing = (typeof COLOR_PAIRINGS)[number];

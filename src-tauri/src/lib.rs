@@ -1,4 +1,9 @@
-use tauri::{Manager, PhysicalSize, WindowEvent};
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+use tauri::{Manager, PhysicalSize, WebviewUrl, WindowEvent};
+
+/// Unique counter for generating window labels
+static WINDOW_COUNTER: AtomicUsize = AtomicUsize::new(1);
 
 /// Aspect ratio for the timer window (width / height)
 /// 2.5:1 ratio provides a compact format for HH:MM:SS display
@@ -10,20 +15,53 @@ pub fn run() {
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
             let window = app.get_webview_window("main").expect("main window not found");
-            let window_clone = window.clone();
-
-            // Register window event listener for aspect ratio enforcement
-            window.on_window_event(move |event| {
-                if let WindowEvent::Resized(size) = event {
-                    enforce_aspect_ratio(&window_clone, size);
-                }
-            });
+            attach_aspect_ratio_handler(&window);
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![])
+        .invoke_handler(tauri::generate_handler![create_timer_window])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+/// Command to spawn a new timer window with the same chrome as the main window
+#[tauri::command]
+fn create_timer_window(app: tauri::AppHandle, label: Option<String>) -> Result<(), String> {
+    let unique_id = WINDOW_COUNTER.fetch_add(1, Ordering::Relaxed);
+    let window_label = label
+        .filter(|l| !l.is_empty())
+        .unwrap_or_else(|| format!("timer-{unique_id}"));
+
+    let builder = tauri::WebviewWindowBuilder::new(
+        &app,
+        window_label.clone(),
+        WebviewUrl::App("index.html".into()),
+    )
+    .title("Countdown Timer")
+    .transparent(true)
+    .decorations(false)
+    .shadow(false)
+    .resizable(true)
+    .always_on_top(true)
+    .inner_size(312.0, 125.0)
+    .min_inner_size(250.0, 100.0);
+
+    let window = builder.build().map_err(|e| e.to_string())?;
+    attach_aspect_ratio_handler(&window);
+
+    Ok(())
+}
+
+/// Attach window listener for aspect ratio enforcement
+fn attach_aspect_ratio_handler(window: &tauri::WebviewWindow) {
+    let window_clone = window.clone();
+
+    // Register window event listener for aspect ratio enforcement
+    window.on_window_event(move |event| {
+        if let WindowEvent::Resized(size) = event {
+            enforce_aspect_ratio(&window_clone, size);
+        }
+    });
 }
 
 /// Enforces the aspect ratio when the window is resized.

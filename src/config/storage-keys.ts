@@ -13,4 +13,7 @@ export const STORAGE_KEYS = {
 
   /** Timer mode (countdown or countup) */
   TIMER_MODE: 'countdown-timer:mode',
+
+  /** Selected color pairing for the clock */
+  COLOR_PAIRING: 'countdown-timer:color-pairing',
 } as const;

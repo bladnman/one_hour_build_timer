@@ -228,6 +228,17 @@ body {
   background-color: var(--color-button-active);
 }
 
+.color-pairing-button {
+  font-size: 0.7rem;
+  gap: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.new-window-button {
+  font-size: 1rem;
+}
+
 /* Play/pause button */
 .play-pause-button {
   font-size: 1.2rem;
