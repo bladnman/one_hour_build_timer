@@ -19,6 +19,18 @@
   padding: 0;
 }
 
+/* Disable text selection globally - this is a utility app, not a document */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow selection in inputs for editing */
+input {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
 /* Transparent background for Tauri window */
 html, body {
   background: transparent;
@@ -49,6 +61,8 @@ body {
   padding: var(--spacing-md);
   position: relative;
   overflow: hidden;
+  /* Enable window dragging */
+  -webkit-app-region: drag;
 }
 
 /* Title area */
@@ -257,21 +271,163 @@ body {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Drag region - allows window to be dragged */
-.drag-region {
+/* Interactive elements should not be draggable */
+.title,
+.title-input,
+.timer-display,
+.time-segment,
+.control-bar,
+.control-button,
+.preset-button,
+.menu-overlay {
+  -webkit-app-region: no-drag;
+}
+
+/* New window button */
+.new-window-button {
+  font-size: 1rem;
+  font-weight: 300;
+  min-width: 1.5rem;
+}
+
+/* Control bar separator */
+.control-bar-separator {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 4px;
+}
+
+/* Menu overlay - uses fixed px sizes to avoid scaling with window */
+.menu-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  -webkit-app-region: drag;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  -webkit-app-region: no-drag;
 }
 
-/* Interactive elements should not be draggable */
-.title,
-.title-input,
-.time-segment,
-.control-button,
-.preset-button {
-  -webkit-app-region: no-drag;
+.menu-panel {
+  background: rgba(45, 45, 45, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 150px;
+  position: relative;
+}
+
+.menu-section {
+  margin-bottom: 10px;
+}
+
+.menu-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.menu-section-title {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.theme-grid-item {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.theme-grid-item:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.theme-grid-item.active {
+  border-color: #ffffff;
+}
+
+.theme-swatch-large {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.menu-action-button {
+  width: 100%;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.menu-action-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.menu-action-danger {
+  color: rgba(239, 68, 68, 0.8);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.menu-action-danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.menu-close-button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.menu-close-button:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
 }
